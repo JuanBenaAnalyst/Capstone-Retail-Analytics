@@ -5,7 +5,7 @@ Retailers often rely on intuition for pricing and inventory. We analyze multi-ta
 
 **Key outcomes**
 - **Segmentation:** Two customer segments; the top segment contributes ~**74% of revenue** while representing ~**49% of customers**, enabling differentiated pricing/CRM.
-- **Forecasting:** RF improves RMSE vs seasonal naïve by **~15% (CV)** and **~34% (14-day holdout)**, with calibrated **~80% prediction intervals** achieving **~85.7% coverage**.
+- **Forecasting:** RF improves RMSE vs seasonal naive by **~15% (CV)** and **~34% (14-day holdout)**, with calibrated **~80% prediction intervals** achieving **~85.7% coverage**.
 - **BI-ready outputs:** Cleaned datasets, feature artifacts, and Tableau feeds for executives.
 
 ## Methods
@@ -20,13 +20,13 @@ Deterministic pipeline standardizing types, validating foreign keys, recomputing
 **Row counts (after cleaning):**
 | table          |    rows |
 |:---------------|--------:|
-| sales          | 6758125 |
+| sales          | 6,758,125 |
 | products       |     452 |
 | cities         |      96 |
 | countries      |     206 |
-| customers      |   98759 |
+| customers      |   98,759 |
 | employees      |      23 |
-| sales_enriched | 6758125 |
+| sales_enriched | 6,758,125 |
 
 **Overall missingness by table:**
 | table          | missing_pct   |
@@ -49,8 +49,8 @@ _Generated from NB01 summary on 2025-09-01 00:23:33Z UTC._
 NB03 generated ML-ready features (RFM3 and an extended set), validated data contracts (schema/types), and exported artifacts used by clustering and forecasting.
 #### Units & notation
 - Currency: **USD**.
-- En tablas de segmentación: `revenue` en **USD (×10k)**; `revenue_share` en **%**.
-- Métricas de forecasting: **RMSE/MAE en USD**, **MAPE y WAPE en %**, **R²** adimensional.
+- In segmentation tables: `revenue` in **USD (×10k)**; `revenue_share` in **%**.
+- Forecasting metrics: **RMSE/MAE in USD**, **MAPE and WAPE in %**, **R²** is unitless.
 
 
 <!-- END:METHODS -->
@@ -60,48 +60,47 @@ NB03 generated ML-ready features (RFM3 and an extended set), validated data cont
 
 **Objective.** Build an end-to-end, reproducible pipeline that (1) segments customers for targeted actions and (2) forecasts daily sales with quantified uncertainty, meeting program constraints (≥2 sources; ≥1,000 rows; ≥5 columns).
 
-**Approach.** We clean and reconcile multi-table data; engineer RFM and transactional features; run K-Means for segmentation (RFM3 and a fuller feature set); and train a Random-Forest forecaster with strict walk-forward validation, a 14-day holdout, and calibrated, weekend-aware conformal prediction intervals.
+**Approach.** We clean and reconcile multi-table data; engineer RFM and transactional features; run K-Means for segmentation (RFM3 and a fuller feature set); and train a Random Forest forecaster with strict walk-forward validation, a 14-day holdout, and calibrated, weekend-aware conformal prediction intervals.
 
-**Impact.** The two-segment view concentrates value on a high-spend cohort, and the forecaster materially beats seasonal naïve baselines, offering actionable PIs for operations and inventory.
+**Impact.** The two-segment view concentrates value on a high-spend cohort, and the forecaster materially beats seasonal naive baselines, offering actionable PIs for operations and inventory.
 
 ## Results
-### Customer segmentation (NB04)
+### Customer Segmentation (NB04)
 #### FULL — cluster mix
 | cluster       |   customers | customer_share   |   revenue | revenue_share   |
 |:--------------|------------:|:-----------------|----------:|:----------------|
-| High-Value | 48613 | 49.2% | 24,600 | 74.8% |
-| Mid/Low-Value | 50146 | 50.8% | 8,280 | 25.2% |
+| High-Value | 48,613 | 49.2% | 24,600 | 74.8% |
+| Mid/Low-Value | 50,146 | 50.8% | 8,280 | 25.2% |
 _Top cluster by revenue_: **High-Value** (revenue share ~ 74.8%, customer share ~ 49.2%).
-_Notas: `revenue` en **USD (×10k)**; `revenue_share` en **%**._
+_Notes: `revenue` in **USD (×10k)**; `revenue_share` in **%**._
 #### RFM3 — cluster mix
 | cluster       |   customers | customer_share   |   revenue | revenue_share   |
 |:--------------|------------:|:-----------------|----------:|:----------------|
-| High-Value | 46646 | 47.2% | 23,900 | 72.8% |
-| Mid/Low-Value | 52113 | 52.8% | 8,930 | 27.2% |
+| High-Value | 46,646 | 47.2% | 23,900 | 72.8% |
+| Mid/Low-Value | 52,113 | 52.8% | 8,930 | 27.2% |
 _Top cluster by revenue_: **High-Value** (revenue share ~ 72.8%, customer share ~ 47.2%).
-_Notas: `revenue` en **USD (×10k)**; `revenue_share` en **%**._
+_Notes: `revenue` in **USD (×10k)**; `revenue_share` in **%**._
 
 
 
 
-### Sales forecasting (NB05) — Cross-Validation & Holdout
+### Sales Forecasting (NB05) — Cross-Validation & Holdout
 
 #### Cross-Validation (7-day WFV)
-|   CV sNaive best RMSE |   CV RF RMSE |   CV RF MAE |   CV RF R² | CV uplift vs sNaive (RMSE)   |
+|   CV seasonal naive best RMSE |   CV RF RMSE |   CV RF MAE |   CV RF R² | CV uplift vs seasonal naive (RMSE)   |
 |----------------------:|-------------:|------------:|-----------:|:-----------------------------|
-|                221907 |       187974 |      158439 |     -0.342 | 15.29%                       |
+|                221,907 |       187,974 |      158,439 |     -0.342 | 15.29%                       |
 
 #### Holdout (14 days)
-|   Holdout RMSE |    MAE |   MAPE (%) |   WAPE (%) |     R² | Uplift vs best sNaive (RMSE)   |
+|   Holdout RMSE |    MAE |   MAPE (%) |   WAPE (%) |     R² | Uplift vs best seasonal naive (RMSE)   |
 |---------------:|-------:|-----------:|-----------:|-------:|:-------------------------------|
 |        199,746 | 161,237 |      48.00 |       0.50 | -0.114 | 33.55% |
 
-_Nota:_ El MAPE puede inflarse en días de bajo revenue; para operaciones priorizamos **WAPE** y **RMSE**.
+_Note:_ MAPE can inflate on low-revenue days; for operations we prioritize **WAPE** and **RMSE**.
 
-### 
 ### Findings
 
-Two robust customer segments with clear revenue skew (≈74% from ~49% of customers). The Random-Forest forecaster improves RMSE by ~15% in cross-validation and ~34% on a 14-day holdout; PI coverage meets the ~80% target after calibration.
+Two robust customer segments with clear revenue skew (≈74% from ~49% of customers). The Random Forest forecaster improves RMSE by ~15% in cross-validation and ~34% on a 14-day holdout; PI coverage meets the ~80% target after calibration.
 
 ### Recommendations
 - **CRM & pricing:** Prioritize high-value segment with tailored offers; test uplift-based discounting; monitor churn-risk within the low-value segment.
@@ -118,4 +117,4 @@ _Generated on 2025-09-01 01:14:08Z UTC_
 <!-- CLOSING_REQUIREMENTS -->
 **Program compliance.** The capstone satisfies program requirements (≥2 data sources; ≥1,000 rows; ≥5 columns) and demonstrates how analytical methods translate into business impact.
 
-<!-- Patched on 2025-09-01 02:42:34Z UTC -->
+<!-- Patched on 2025-09-01 02:54:00Z UTC -->
