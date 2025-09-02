@@ -260,12 +260,3 @@ I built a reproducible pipeline from raw multi-table data (**NB01**) to **EDA** 
 - **Dataset:** *Grocery Sales Dataset* — **andrexibiza** (Kaggle): <https://www.kaggle.com/datasets/andrexibiza/grocery-sales-dataset/data>  
 - Used & extended **for educational purposes**.
 <!-- /SECTION:CONCLUSION -->
-
-<!-- SECTION:SUBMISSION_NOTES -->
-## Submission notes (clarity & formatting)
-- Headings are bold/large (not italic/underlined).  
-- Figures are centered and captioned; tables include concise headers.  
-- The introduction sets context and the path; the conclusion synthesizes the main points without adding new material.  
-- The narrative avoids filler; repeated ideas are re-phrased and synthesized rather than restated verbatim.  
-- The document has been proofread for spelling, grammar, and repetition; all “to-dos” were removed.
-<!-- /SECTION:SUBMISSION_NOTES -->
