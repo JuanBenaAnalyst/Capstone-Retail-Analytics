@@ -1,0 +1,12 @@
+{
+  "target_pct": 80,
+  "strategy": "asymmetric_weekpart_shrunk + multiplicative_calibration",
+  "scale_factor_k": 1.1412757262587547,
+  "holdout_coverage_pct": 85.71,
+  "holdout_width_mean": 520187.5656948965,
+  "holdout_width_median": 496947.30555895343,
+  "sources": {
+    "base": "rf_holdout_predictions_forward_CONF_ASYM_WEEKPART_SHRUNK.parquet",
+    "calibrated": "rf_holdout_predictions_forward_CONF_ASYM_WEEKPART_SHRUNK_CALIB80.parquet"
+  }
+}
