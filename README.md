@@ -46,8 +46,8 @@ Retail teams often rely on intuition to set prices, allocate inventory, and plan
 ## Methods
 
 ### Data sources (≥2 sources, ≥1,000 rows, ≥5 columns — **met**)
-- **Primary:** Grocery Sales multi-table CSVs — `sales`, `products`, `customers`, `employees`, `cities`, `countries`.  
-- **Dimensional joins:** Product category/class attributes; city ↔ country mappings (customers & employees).
+- **Primary:** Grocery Sales multi-table CSVs — `sales`, `products`, `customers`, `employees`, `cities`, `countries` (**Kaggle:** [Grocery Sales Dataset — andrexibiza](https://www.kaggle.com/datasets/andrexibiza/grocery-sales-dataset/data)).  
+- **Dimensional joins:** Product category/class attributes; city ↔ country mappings (customers & employees).  
 - **Derived (educational):** `products_with_category_v7_clean.csv` — I curated this file by joining the original `products` and `categories` tables and standardizing labels (merging synonyms, fixing typos, and consolidating classes). It improves category granularity but **may contain classification errors**, so treat it as a best-effort educational artifact rather than ground truth.
 
 **NB01 snapshot (row counts & range)**  
@@ -106,8 +106,7 @@ Rows with missing `SalesDate` are **excluded** from time series but **included**
 - README sections updated **idempotently** from notebooks.
 
 ### Data provenance & credits
-- **Dataset:** *Grocery Sales Dataset* (synthetic but realistic).  
-- **Original dataset author (credit):** **andrexibiza** — Kaggle.  
+- **Dataset:** *Grocery Sales Dataset* by **andrexibiza** (Kaggle): <https://www.kaggle.com/datasets/andrexibiza/grocery-sales-dataset/data>  
 - Re-used/extended **for educational purposes only** (no real commercial recommendations).
 <!-- /SECTION:METHODS -->
 
@@ -273,7 +272,8 @@ A reproducible pipeline from raw multi-table data (**NB01**) to **EDA** (**NB02*
 
 ### Authorship & data credits
 - **Author:** *Juan Diego Benavides*.  
-- **Dataset credit:** *Grocery Sales Dataset* by **andrexibiza** (Kaggle). Used & extended **for educational purposes**.
+- **Dataset:** *Grocery Sales Dataset* — **andrexibiza** (Kaggle): <https://www.kaggle.com/datasets/andrexibiza/grocery-sales-dataset/data>  
+- Used & extended **for educational purposes**.
 
 <sub>All results are educational on a synthetic dataset, intended to illustrate a robust analytics workflow and clear stakeholder communication.</sub>
 <!-- /SECTION:CONCLUSION -->
