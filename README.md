@@ -103,9 +103,9 @@ K-Means fitted on two variants (from NB03):
 <!-- SECTION:RESULTS -->
 ## Results
 
-> **Data lineage.** Unless noted, EDA visuals were computed on **full history** from `sales_enriched.csv` joined with `customers_segments_tableau.csv`.  
+> **Data lineage.** EDA visuals were computed on **full history** from `sales_enriched.csv` joined with `customers_segments_tableau.csv`.  
 > The **trend & forecast** use `clean/tableau_feeds/ts_forecast_feed_long.csv` and are the only visuals affected by the **Window Days** parameter (30/60/90; default 90).  
-> **Repo note:** the repository includes `sales_enriched_mini.csv` due to size constraints; slight numeric differences can occur if you use only the mini feed.
+> **Repo note:** The repository includes `sales_enriched_mini.csv` due to size constraints; slight numeric differences can occur if you use only the mini feed.
 
 ### 1) Exploratory Data Analysis (NB02)
 
