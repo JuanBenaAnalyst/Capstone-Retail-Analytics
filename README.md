@@ -27,7 +27,7 @@
 <!-- SECTION:INTRO -->
 ## Introduction
 
-Retailers often lean on intuition for pricing, inventory, and promotions. With multi-table transactional data, I replace guesswork with **descriptive analytics**, **customer segmentation**, and **predictive modeling** to reduce stockouts/overstocks and target campaigns more effectively.
+Retailers often rely on intuition for pricing, inventory management, and promotions. With multi-table transactional data, I replace guesswork with **descriptive analytics**, **customer segmentation**, and **predictive modeling** to reduce stockouts/overstocks and target campaigns more effectively.
 
 **Why this approach**
 - The data captures **who buys what, where, and when**, enabling both **customer-level** and **time-series** analysis.  
