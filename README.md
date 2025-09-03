@@ -109,7 +109,133 @@ K-Means fitted on two variants (from NB03):
 
 ### 1) Exploratory Data Analysis (NB02)
 
-... [same as your original, visuals + tables, unchanged, already impersonal] ...
+#### Core KPIs (full history)
+| Metric | Mean | Median | P90 |
+|---|---:|---:|---:|
+| **ATV (Average Transaction Value)** | 641.07 | 490.77 | 1,472.30 |
+| **UPT (Units per Transaction)** | 13.00 | 13.00 | 23.00 |
+
+<sub>Source: `sales_enriched.csv` (joined with `customers_segments_tableau.csv` for segment filters).</sub>
+
+---
+
+#### Monthly Sales Trend (illustrative)
+![Monthly total sales](assets/sales_monthly_line.png)
+
+<sub>Rows with missing `SalesDate` are excluded from the time series (≈**1.0%**), but they remain in global KPIs. Source: `sales_enriched.csv`.</sub>
+
+![Rows included vs excluded (time-series policy)](assets/ts_included_vs_excluded.png)
+
+---
+
+#### Category Mix
+![Top categories by revenue](assets/sales_top_categories_by_revenue.png)
+
+<sub>Revenue concentrates in a few categories (assortment & promo focus). Source: `sales_enriched.csv`.  
+**Note:** Categories use the curated mapping `products_with_category_v7_clean.csv` (educational; may include errors).</sub>
+
+---
+
+#### RFM Distributions (customer-level, NB03 input)
+| Feature | Median | P75 |
+|---|---:|---:|
+| **Recency (days)** | 1 | 2 |
+| **Frequency (# orders)** | 68 | 73 |
+| **Monetary (total spend)** | 42,557 | 63,148 |
+
+![RFM correlation](assets/rfm_correlation_heatmap.png)
+
+<sub>Recency is negatively related to Frequency/Monetary (recent buyers purchase/spend more). Aggregated from `sales_enriched.csv` by `SalesID`.</sub>
+
+---
+
+#### Customer Concentration (Pareto)
+![Pareto (customers vs revenue)](assets/pareto_customers_revenue.png)
+
+<sub>~**55.9%** of customers generate **80%** of revenue → segmentation is warranted. Source: `sales_enriched.csv`.</sub>
+
+---
+
+#### Optional snapshots
+![Products by class](assets/products_class_counts.png) ![Perishable vs Non-Perishable](assets/products_perishable_counts.png)
+
+<sub>Assortment and perishables composition — inventory & freshness policy. Source: product joins → `sales_enriched.csv`.  
+**Note:** Category labels come from `products_with_category_v7_clean.csv` (educational; may include errors).</sub>
+
+---
+
+### 2) Feature insights (NB03)
+Customers: **98,759** | Daily rows: **129** | Transactions: **6,690,599**.  
+Published matrices: **FULL** (6 features) & **RFM3** (3 features). All scaled to **[0,1]** with **0 NaNs**.  
+<sub>Source: `clean/model_input/*.parquet` (summaries exported to CSV for the report).</sub>
+
+---
+
+### 3) Customer Segmentation (NB04)
+
+**Model quality**
+- **FULL:** K = **2** | Silhouette ≈ **0.3819** | DB ≈ **1.0071** | CH ≈ **87,885.7**  
+- **RFM3:** K = **2** | Silhouette ≈ **0.3968** | DB ≈ **0.9761** | CH ≈ **85,773.5**
+
+**Segment size & contribution (FULL, harmonized HV vs Mid/Low)**
+
+| Segment | Share of customers | Share of revenue | Lift vs avg $/customer |
+|---|---:|---:|---:|
+| High-Value | 49.2% | 73.7% | +49.7% |
+| Mid/Low-Value | 50.8% | 26.3% | −48.1% |
+
+<sub>Sources: `clean/tableau_feeds/cluster_profiles_full_executive.csv`, `clean/tableau_feeds/revenue_by_cluster_full.csv`. Tableau uses `customers_segments_tableau.csv` for interactive filtering.</sub>
+
+**Interpretation.** The **High-Value** segment concentrates revenue with a similar share of customers, driven by higher Frequency/Monetary and lower Recency (more active). Priorities: **retention**, **stockout prevention**, **premium bundles**. The **Mid/Low** group is a candidate for **activation** and **cross-sell**.
+
+**Stability.** Bootstrap agreement/ARI/NMI is ~0.99. GMM, Agglomerative, and DBSCAN were benchmarked; K-Means was retained for clarity and ease of use.
+
+---
+
+### 4) Forecasting (NB05)
+
+**Cross-validation (mean across folds)**  
+| RMSE | MAE | R² |
+|---:|---:|---:|
+| 187,973.59 | 158,438.55 | −0.34 |
+
+*Note:* MAPE is unstable with zero/near-zero sales days, and WAPE per fold is less interpretable. CV focuses on **RMSE/MAE** and **R²**.  
+
+**Holdout (14 days)**  
+| RMSE | MAE | MAPE | WAPE | R² | Uplift vs seasonal naïve |
+|---:|---:|---:|---:|---:|---:|
+| 199,746.35 | 161,236.64 | **48.22%** | **48.0%** | −0.11 | **+33.55%** |
+
+![Timeline — Actual vs RF (Backtest/Holdout/Future)](assets/timeline_backtest_holdout_future.png)
+
+<sub>Backtest, 14-day holdout, and 14-day future forecast from the champion RF model.  
+Sources: `clean/tableau_feeds/baseline_backtest_metrics_SAFE_7d_R.csv`, `clean/tableau_feeds/champion_backtest_residuals.csv`,  
+`clean/tableau_feeds/rf_holdout_predictions_forward_CONF_ASYM_WEEKPART_SHRUNK_CALIB80.csv`,  
+`clean/tableau_feeds/rf_future_forecast_forward_CONF_ASYM_WEEKPART_SHRUNK_CALIB80.csv`.</sub>
+
+**Prediction intervals (80%)**  
+Holdout coverage ≈ **85.7%**; mean/median widths tracked in `clean/tableau_feeds/pi_coverage_holdout.json`.
+
+---
+
+### 5) Dashboard (Tableau)
+
+**Public link:** [Open the Tableau dashboard](https://public.tableau.com/views/DashboardRetailAnalytics/EDAExplorer?:language=en-US&:sid=&:redirect=auth&:display_count=n&:origin=viz_share_link)
+
+**Executive** view
+- **Trend & Forecast:** driven by `clean/tableau_feeds/ts_forecast_feed_long.csv` (**honors Window Days**). KPI cards (e.g., *Sales Last N days*, *Forecast Next 14 days*) are Tableau calculations over that feed.  
+- **Segmentation cards, DOW pattern, Top Categories, Perishable mix, Discount buckets:** computed on **full-history** `sales_enriched.csv` joined to `customers_segments_tableau.csv` (these do **not** change with Window Days; they do respond to EDA filters).
+
+**EDA Explorer** view
+- **Filters:** **Segment**, **Month (month-of-year)**, **Weekday**.  
+- **Reference metrics:** Active Customers ~98,759; **ATV** ~641; **UPT** ~13 (full history).
+
+<p align="center">
+  <img src="assets/Executive.png" alt="Executive overview (trend & forecast with Window Days, plus segmentation cards)" width="430"/>
+  <img src="assets/EDA_Explorer.png" alt="EDA Explorer (filters by Segment, Month, Weekday)" width="430"/>
+</p>
+
+> Only the trend/forecast honors **Window Days**. The repo includes `sales_enriched_mini.csv` for convenience; the published dashboard and this report were computed on the **full** feed.
 <!-- /SECTION:RESULTS -->
 
 <!-- SECTION:CONCLUSION -->
