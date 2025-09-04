@@ -6,6 +6,10 @@ theme: jekyll-theme-cayman
 
 # Optimizing Retail Decisions through Customer Segmentation and Predictive Sales Modeling
 
+<p align="center">
+  🔗 <a href="https://github.com/JuanBenaAnalyst/Capstone-Retail-Analytics" target="_blank">View this project on GitHub</a>
+</p>
+
 **Author:** *Juan Diego Benavides*  
 **Purpose:** Educational capstone demonstrating an end-to-end **data-driven retail analytics** pipeline and communicating findings to non-technical stakeholders.
 
@@ -15,7 +19,19 @@ theme: jekyll-theme-cayman
 - [Executive Summary](#executive-summary)
 - [Introduction](#introduction)
 - [Methods](#methods)
+  - [Data sources](#data-sources-2-sources-1000-rows-5-columns--met)
+  - [Data cleaning & integration (NB01)](#data-cleaning--integration-nb01)
+  - [Feature engineering (NB03)](#feature-engineering-nb03)
+  - [Customer clustering (NB04)](#customer-clustering-nb04)
+  - [Forecasting (NB05)](#forecasting-nb05)
+  - [Reproducibility](#reproducibility)
+  - [Data provenance & credits](#data-provenance--credits)
 - [Results](#results)
+  - [1) Exploratory Data Analysis (NB02)](#1-exploratory-data-analysis-nb02)
+  - [2) Feature insights (NB03)](#2-feature-insights-nb03)
+  - [3) Customer Segmentation (NB04)](#3-customer-segmentation-nb04)
+  - [4) Forecasting (NB05)](#4-forecasting-nb05)
+  - [5) Dashboard (Tableau)](#5-dashboard-tableau)
 - [Conclusion](#conclusion)
   - [Authorship & data credits](#authorship--data-credits)
 
@@ -23,7 +39,7 @@ theme: jekyll-theme-cayman
 
 ## Executive Summary
 
-**Executive questions**
+**Executive questions**  
 1) **What are the key sales patterns?**  
 2) **Which customer segments drive revenue?**  
 3) **How can short-term sales be forecast to inform inventory decisions?**
@@ -62,6 +78,7 @@ The pipeline first ensures trustworthy data (types, joins, integrity), then expl
 This section covers data sources, cleaning, features, models, validation, and reproducibility.
 
 ### Data sources (≥2 sources, ≥1,000 rows, ≥5 columns — **met**)
+
 - **Primary:** Grocery Sales multi-table CSVs — `sales`, `products`, `customers`, `employees`, `cities`, `countries` (**Kaggle:** [Grocery Sales Dataset — andrexibiza](https://www.kaggle.com/datasets/andrexibiza/grocery-sales-dataset/data)).  
 - **Dimensional joins:** Product category/class attributes; city ↔ country mappings (customers & employees).  
 - **Derived (educational):** `products_with_category_v7_clean.csv` — curated by joining the original `products` and `categories` tables and standardizing labels (merging synonyms, fixing typos, consolidating classes). It improves category granularity but **may contain classification errors**, so it should be treated as a best-effort educational artifact.
@@ -72,6 +89,7 @@ This section covers data sources, cleaning, features, models, validation, and re
 - Sales date range: **2018-01-01 00:00:04.070000 → 2018-05-09 23:59:59.400000**
 
 ### Data cleaning & integration (NB01)
+
 - Standardized types (dates, numeric, categorical) and normalized text.  
 - De-duplicated keys; harmonized product attributes.  
 - **Foreign-key validation** across sales→customers/products/employees and geography chains (customers/employees→cities→countries) — **0 missing keys**.  
@@ -84,6 +102,7 @@ NB01 **materializes the full history** as `sales_enriched.csv`. Because that fil
 > All KPIs and visuals in this README were computed on the **full** `sales_enriched.csv`. If only the mini feed is used, **minor discrepancies** may appear. To reproduce exact figures, run **NB01** locally to regenerate the full file.
 
 ### Feature engineering (NB03)
+
 - **Transaction definition:** one **order** per `SalesID`. RFM window: **2018-01-01 → 2018-05-09**, anchor `t₀ = max(valid SalesDate)`.  
 - **RFM:** `recency_days`, `frequency`, `monetary`.  
 - **Extra customer features:** `avg_ticket`, `pct_discounted`, `n_categories`. Geography modes (`top_city`, `top_country`) are reporting-only.  
@@ -91,6 +110,7 @@ NB01 **materializes the full history** as `sales_enriched.csv`. Because that fil
 - **Time-series policy:** rows with missing `SalesDate` are **excluded** from time series but **included** in global KPIs.
 
 ### Customer clustering (NB04)
+
 K-Means fitted on two variants (from NB03):
 - **RFM3:** `recency_days`, `frequency`, `monetary`  
 - **FULL:** RFM3 + `avg_ticket`, `pct_discounted`, `n_categories`
@@ -102,17 +122,20 @@ K-Means fitted on two variants (from NB03):
 **Labeling:** the **High-Value** cluster maximizes `frequency + monetary − recency`. A binary label `hv01` (0=High-Value, 1=Mid/Low) was also published.
 
 ### Forecasting (NB05)
+
 - **Target:** daily `TotalRevenue`. **Champion:** `RandomForestRegressor`.  
 - **Features (forward-only):** calendar, DOW one-hot, lags/rollings, weekly Fourier terms (no leakage).  
 - **Validation:** time-aware CV (blocked/rolling) + **14-day holdout**.  
 - **Metrics:** RMSE, MAE, **R²** for CV; **RMSE/MAE/MAPE/WAPE/R²** for holdout. **Prediction intervals** calibrated to **80%** coverage.
 
 ### Reproducibility
+
 - Random seed fixed (`42`).  
 - Clean outputs in `clean/*.parquet`; model artifacts in `clean/forecast/*`.  
 - README sections updated **idempotently** from notebooks.
 
 ### Data provenance & credits
+
 - **Dataset:** *Grocery Sales Dataset* by **andrexibiza** (Kaggle): <https://www.kaggle.com/datasets/andrexibiza/grocery-sales-dataset/data>  
 - Re-used/extended **for educational purposes only**.
 
@@ -127,19 +150,21 @@ K-Means fitted on two variants (from NB03):
 ### 1) Exploratory Data Analysis (NB02)
 
 #### Core KPIs (full history)
-| Metric | Mean | Median | P90 |
-|---|---:|---:|---:|
+
+| Metric                           |   Mean |  Median |    P90 |
+|----------------------------------|-------:|--------:|-------:|
 | **ATV (Average Transaction Value)** | 641.07 | 490.77 | 1,472.30 |
-| **UPT (Units per Transaction)** | 13.00 | 13.00 | 23.00 |
+| **UPT (Units per Transaction)**     |  13.00 |  13.00 |    23.00 |
 
 <sub>Source: `sales_enriched.csv` (joined with `customers_segments_tableau.csv` for segment filters).</sub>
 
 ---
 
 #### Monthly Sales Trend (illustrative)
+
 <figure>
   <img src="assets/sales_monthly_line.png" alt="Monthly total sales" style="max-width: 100%; height: auto;">
-  <figcaption><em>Rows with missing <code>SalesDate</code> are excluded from the time series (≈1.0%), but remain in global KPIs. Source: <code>sales_enriched.csv</code>.</em></figcaption>
+  <figcaption><em>Rows with missing <code>SalesDate</code> are excluded from the time series (≈1.0%), but they remain in global KPIs. Source: <code>sales_enriched.csv</code>.</em></figcaption>
 </figure>
 
 <figure>
@@ -149,6 +174,7 @@ K-Means fitted on two variants (from NB03):
 ---
 
 #### Category Mix
+
 <figure>
   <img src="assets/sales_top_categories_by_revenue.png" alt="Top categories by revenue" style="max-width: 100%; height: auto;">
   <figcaption><em>Revenue concentrates in a few categories (assortment & promo focus). Source: <code>sales_enriched.csv</code>.</em></figcaption>
@@ -159,10 +185,11 @@ K-Means fitted on two variants (from NB03):
 ---
 
 #### RFM Distributions (customer-level, NB03 input)
-| Feature | Median | P75 |
-|---|---:|---:|
-| **Recency (days)** | 1 | 2 |
-| **Frequency (# orders)** | 68 | 73 |
+
+| Feature                  | Median | P75   |
+|--------------------------|------:|-----:|
+| **Recency (days)**       |     1 |    2 |
+| **Frequency (# orders)** |    68 |   73 |
 | **Monetary (total spend)** | 42,557 | 63,148 |
 
 <figure>
@@ -173,6 +200,7 @@ K-Means fitted on two variants (from NB03):
 ---
 
 #### Customer Concentration (Pareto)
+
 <figure>
   <img src="assets/pareto_customers_revenue.png" alt="Pareto customers vs revenue" style="max-width: 100%; height: auto;">
   <figcaption><em>~55.9% of customers generate 80% of revenue → segmentation is warranted. Source: <code>sales_enriched.csv</code>.</em></figcaption>
@@ -181,6 +209,7 @@ K-Means fitted on two variants (from NB03):
 ---
 
 #### Optional snapshots
+
 <p style="display:flex; gap:10px; flex-wrap:wrap;">
   <img src="assets/products_class_counts.png" alt="Products by class" style="max-width: 48%; height: auto;">
   <img src="assets/products_perishable_counts.png" alt="Perishable vs Non-Perishable" style="max-width: 48%; height: auto;">
@@ -192,26 +221,28 @@ K-Means fitted on two variants (from NB03):
 ---
 
 ### 2) Feature insights (NB03)
+
 Customers: **98,759** | Daily rows: **129** | Transactions: **6,690,599**.  
 Published matrices: **FULL** (6 features) & **RFM3** (3 features). All scaled to **[0,1]** with **0 NaNs**.  
-<sub>Source: <code>clean/model_input/*.parquet</code> (summaries exported to CSV for the report).</sub>
+<sub>Source: `clean/model_input/*.parquet` (summaries exported to CSV for the report).</sub>
 
 ---
 
 ### 3) Customer Segmentation (NB04)
 
 **Model quality**
+
 - **FULL:** K = **2** | Silhouette ≈ **0.3819** | DB ≈ **1.0071** | CH ≈ **87,885.7**  
 - **RFM3:** K = **2** | Silhouette ≈ **0.3968** | DB ≈ **0.9761** | CH ≈ **85,773.5**
 
 **Segment size & contribution (FULL, harmonized HV vs Mid/Low)**
 
-| Segment | Share of customers | Share of revenue | Lift vs avg $/customer |
-|---|---:|---:|---:|
-| High-Value | 49.2% | 73.7% | +49.7% |
-| Mid/Low-Value | 50.8% | 26.3% | −48.1% |
+| Segment       | Share of customers | Share of revenue | Lift vs avg $/customer |
+|---------------|-------------------:|-----------------:|-----------------------:|
+| High-Value    | 49.2%              | 73.7%            | +49.7%                 |
+| Mid/Low-Value | 50.8%              | 26.3%            | −48.1%                 |
 
-<sub>Sources: <code>clean/tableau_feeds/cluster_profiles_full_executive.csv</code>, <code>clean/tableau_feeds/revenue_by_cluster_full.csv</code>. Tableau uses <code>customers_segments_tableau.csv</code> for interactive filtering.</sub>
+<sub>Sources: `clean/tableau_feeds/cluster_profiles_full_executive.csv`, `clean/tableau_feeds/revenue_by_cluster_full.csv`. Tableau uses `customers_segments_tableau.csv` for interactive filtering.</sub>
 
 **Interpretation.** The **High-Value** segment concentrates revenue with a similar share of customers, driven by higher Frequency/Monetary and lower Recency (more active). Priorities: **retention**, **stockout prevention**, **premium bundles**. The **Mid/Low** group is a candidate for **activation** and **cross-sell**.
 
@@ -221,26 +252,24 @@ Published matrices: **FULL** (6 features) & **RFM3** (3 features). All scaled to
 
 ### 4) Forecasting (NB05)
 
-**Cross-validation (mean across folds)**  
-| RMSE | MAE | R² |
-|---:|---:|---:|
+**Cross-validation (mean across folds)**
+
+|    RMSE |       MAE |    R² |
+|-------:|----------:|-----:|
 | 187,973.59 | 158,438.55 | −0.34 |
 
-*Note:* MAPE is unstable with zero/near-zero sales days, and WAPE per fold is less interpretable. CV focuses on **RMSE/MAE** and **R²**.  
+*Note:* MAPE is unstable with zero/near-zero sales days, and WAPE per fold is less interpretable. CV focuses on **RMSE/MAE** and **R²**.
 
-**Holdout (14 days)**  
-| RMSE | MAE | MAPE | WAPE | R² | Uplift vs seasonal naïve |
-|---:|---:|---:|---:|---:|---:|
+**Holdout (14 days)**
+
+|    RMSE |       MAE |   MAPE |   WAPE |    R² | Uplift vs seasonal naïve |
+|-------:|----------:|-------:|-------:|-----:|-------------------------:|
 | 199,746.35 | 161,236.64 | **48.22%** | **48.0%** | −0.11 | **+33.55%** |
 
 <figure>
   <img src="assets/timeline_backtest_holdout_future.png" alt="Timeline — Actual vs RF (Backtest/Holdout/Future)" style="max-width: 100%; height: auto;">
   <figcaption><em>Backtest, 14-day holdout, and 14-day future forecast from the champion RF model.</em></figcaption>
 </figure>
-
-<sub>Sources: <code>clean/tableau_feeds/baseline_backtest_metrics_SAFE_7d_R.csv</code>, <code>clean/tableau_feeds/champion_backtest_residuals.csv</code>,  
-<code>clean/tableau_feeds/rf_holdout_predictions_forward_CONF_ASYM_WEEKPART_SHRUNK_CALIB80.csv</code>,  
-<code>clean/tableau_feeds/rf_future_forecast_forward_CONF_ASYM_WEEKPART_SHRUNK_CALIB80.csv</code>.</sub>
 
 **Prediction intervals (80%)**  
 Holdout coverage ≈ **85.7%**; mean/median widths tracked in `clean/tableau_feeds/pi_coverage_holdout.json`.
@@ -249,7 +278,8 @@ Holdout coverage ≈ **85.7%**; mean/median widths tracked in `clean/tableau_fee
 
 ### 5) Dashboard (Tableau)
 
-**Public link:** [Open the Tableau dashboard](https://public.tableau.com/views/DashboardRetailAnalytics/EDAExplorer?:language=en-US&:sid=&:redirect=auth&:display_count=n&:origin=viz_share_link)
+**Public link:**  
+🔗 [Open the Tableau dashboard](https://public.tableau.com/views/DashboardRetailAnalytics/EDAExplorer?:language=en-US&:sid=&:redirect=auth&:display_count=n&:origin=viz_share_link)
 
 **Executive** view
 - **Trend & Forecast:** driven by `clean/tableau_feeds/ts_forecast_feed_long.csv` (**honors Window Days**). KPI cards (e.g., *Sales Last N days*, *Forecast Next 14 days*) are Tableau calculations over that feed.  
